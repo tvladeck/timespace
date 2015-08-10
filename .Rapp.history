@@ -1,0 +1,22 @@
+quit(save = "no")
+setwd("~/Dropbox (BPS)/Venmo_Analytics/Strategy Team/Tom V/map")
+load.project()
+library(ProjectTemplate)
+load.project()
+load("images/.RData")
+ncol(distance.matrix)
+current.row
+source("src/add_to_distance_matrix.R")
+ncol(distance.matrix)
+distance.matrix[, 125]
+distance.matrix[, 126]
+distance.matrix[, 122]
+distance.matrix[, 123]
+distance.matrix[, 124]
+distance.matrix[, 125]
+distance.matrix[, 123]
+distance.matrix[, 122]
+distance.matrix[, 121]
+source("src/transform_distance_matrix.R")
+make.voronoi.plot(coord.mtx)
+save.image("images/.RData")
