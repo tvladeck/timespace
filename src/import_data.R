@@ -32,21 +32,47 @@ import.ny.subway.stations <- function(){
 		rows.to.remove <- c()
 
 		for (i in 1:nrow(df)){
-			stns <- df$ROUTES[i] %>% strsplit(",") %>% unlist
-			if (length(stns) > 1) {
-				for (j in stns){
+			routes <- df$ROUTES[i] %>% strsplit(",") %>% unlist
+			if (length(routes) > 1) {
+				for (j in routes) {
 					# make a copy of the current row
 					# add it to the bottom of the data frame
 					# then change the ROUTES entry so that it only has one
 					# then finally we'll delete the duped entries below
 					df <- rbind(df, df[i, ])
 					df$ROUTES[nrow(df)] <- j
+
+					# need to give the station a new unique id
+					df$UNIQUEID[nrow(df)] <- digest(runif(1))
 				}
 				rows.to.remove <- c(rows.to.remove, i)
 			}
 		}
 
 		df <- df[-rows.to.remove, ]
+		return(df)
+	}
+
+
+	correct.ordering.of.stops <- function(df){
+		names <- ("one"
+			# , "two", "three", "four", "five", "six", "seven", 
+			# "alpha", "bravo", "charlie", "delta", "echo", "foxtrot", 
+			# "golf", "lima", "juliet", "zulu", "mike", "november", "quebec", 
+			# "romeo", "victor", "whiskey", "sierra"
+			)
+
+		list.of.route.dfs <- c()
+
+		# have to figure out way to disambiguate b/t stations of the same name
+
+		for (route in names) {
+			order <- str_c("line.", route, ".order") %>% get
+			order$UNIQUEID <- as.character(order$UNIQUEID)
+			list.of.route.dfs[[route]] <- left_join(order, df, by = "UNIQUEID")
+		}
+
+		return(list.of.route.dfs)
 	}
 
 	# main script
@@ -55,6 +81,9 @@ import.ny.subway.stations <- function(){
 		as.data.frame %>%
 		rename(lng = coords.x1, lat = coords.x2) %>%
 		mutate(ROUTES = as.character(ROUTES)) %>%
+		transform(UNIQUEID = OBJECTID) %>%
+		transform(UNIQUEID = as.character(UNIQUEID)) %>%  #must be a bug in dplyr
 		disambiguate.stations %>%
+		#correct.ordering.of.stops %>%
 		return
 }
