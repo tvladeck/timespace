@@ -59,7 +59,7 @@ import.ny.subway.stations <- function(){
 	correct.ordering.of.stops <- function(df){
 		
 		# DON'T NEED THIS IDEALLY - CAN JUST FILTER BY ROUTE
-		names <- ("one"
+		branches <- ("one"
 			# , "two", "three", "four", "five", "six", "seven", 
 			# "alpha", "bravo", "charlie", "delta", "echo", "foxtrot", 
 			# "golf", "lima", "juliet", "zulu", "mike", "november", "quebec", 
@@ -68,16 +68,15 @@ import.ny.subway.stations <- function(){
 
 		list.of.route.dfs <- c()
 
-		
 
-		for (route in names) {
+		for (branch in branches) {
 
 			# SHOULD JUST MAKE THIS ONE THING, SINCE CAN FILTER BY ROUTE
-			order <- str_c("line.", route, ".order") %>% get
+			order <- filter(route.orders, BRANCH == branch)
 			order$UNIQUEID <- as.character(order$UNIQUEID)
 			order$ROUTES <- as.character(order$ROUTES)
 			
-			list.of.route.dfs[[route]] <- left_join(order, df, by = c("OBJECTID", "ROUTES"))
+			list.of.route.dfs[[branch]] <- left_join(order, df, by = c("OBJECTID", "ROUTES"))
 		}
 
 		return(list.of.route.dfs)
