@@ -43,6 +43,8 @@ import.ny.subway.stations <- function(){
 					df$ROUTES[nrow(df)] <- j
 
 					# need to give the station a new unique id
+					# this is a problem as it will generate a new 
+					# hash each time, making it impossible 
 					df$UNIQUEID[nrow(df)] <- digest(runif(1))
 				}
 				rows.to.remove <- c(rows.to.remove, i)
@@ -55,6 +57,8 @@ import.ny.subway.stations <- function(){
 
 
 	correct.ordering.of.stops <- function(df){
+		
+		# DON'T NEED THIS IDEALLY - CAN JUST FILTER BY ROUTE
 		names <- ("one"
 			# , "two", "three", "four", "five", "six", "seven", 
 			# "alpha", "bravo", "charlie", "delta", "echo", "foxtrot", 
@@ -64,12 +68,16 @@ import.ny.subway.stations <- function(){
 
 		list.of.route.dfs <- c()
 
-		# have to figure out way to disambiguate b/t stations of the same name
+		
 
 		for (route in names) {
+
+			# SHOULD JUST MAKE THIS ONE THING, SINCE CAN FILTER BY ROUTE
 			order <- str_c("line.", route, ".order") %>% get
 			order$UNIQUEID <- as.character(order$UNIQUEID)
-			list.of.route.dfs[[route]] <- left_join(order, df, by = "UNIQUEID")
+			order$ROUTES <- as.character(order$ROUTES)
+			
+			list.of.route.dfs[[route]] <- left_join(order, df, by = c("OBJECTID", "ROUTES"))
 		}
 
 		return(list.of.route.dfs)
@@ -84,6 +92,6 @@ import.ny.subway.stations <- function(){
 		transform(UNIQUEID = OBJECTID) %>%
 		transform(UNIQUEID = as.character(UNIQUEID)) %>%  #must be a bug in dplyr
 		disambiguate.stations %>%
-		#correct.ordering.of.stops %>%
+		correct.ordering.of.stops %>%
 		return
 }
