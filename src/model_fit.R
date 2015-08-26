@@ -20,7 +20,6 @@ fit.new.coordinates <- function(distance.matrix, lat.lng, poly.degree = 4){
   df$dim2 <- fitted.dim2
   
   return(df)
-  
 }
 
 
