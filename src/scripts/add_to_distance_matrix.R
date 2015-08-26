@@ -1,5 +1,5 @@
-source("src/create_distance_matrix.R")
-source("src/time_between_locations.R")
+source("src/functions/create_distance_matrix.R")
+source("src/functions/time_between_locations.R")
 
 # confirm current row is correct
 current.row <- ncol(distance.matrix) - 3

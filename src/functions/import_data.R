@@ -22,7 +22,7 @@ import.ny.waterfront.park.data <- function(){
  		return
 }
 
-import.ny.subway.stations <- function(){
+import.ny.subway.stations <- function(all.stops = F){
 
 	disambiguate.stations <- function(df){
 		
@@ -57,7 +57,9 @@ import.ny.subway.stations <- function(){
 
 
 	correct.ordering.of.stops <- function(df){
-				
+		
+	  if(all.stops) return(df)
+	  		
 		route.orders$ROUTES <- as.character(route.orders$ROUTES)
 
 		df %>%
