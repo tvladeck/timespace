@@ -1,5 +1,7 @@
-calc.boroughs.geom <- function(nyb){
-  cvx.nyb <- loess.fit.new.coordinates(distance.matrix, nyb)
+span <- 0.3
+
+calc.boroughs.geom <- function(nyb, span = 0.3){
+  cvx.nyb <- loess.fit.new.coordinates(distance.matrix, nyb, span)
   
   boroughs.geom <- geom_polygon(
     data = cvx.nyb, 
@@ -9,13 +11,13 @@ calc.boroughs.geom <- function(nyb){
   return(boroughs.geom)
 }
 
-calc.subways.geom <- function(subways){
-  subway.coords <- loess.fit.new.coordinates(distance.matrix, subways)
+calc.subways.geom <- function(subways, span = 0.3){
+  subway.coords <- loess.fit.new.coordinates(distance.matrix, subways, span)
   
   subways.geom <- geom_path(
     data = subway.coords, 
     aes(x=dim1, y=dim2, group=BRANCH)
-  )
+  ) 
 
   return(subways.geom)
 

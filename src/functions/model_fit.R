@@ -23,7 +23,7 @@ fit.new.coordinates <- function(distance.matrix, lat.lng, poly.degree = 4){
 }
 
 
-loess.fit.new.coordinates <- function(distance.matrix, lat.lng){
+loess.fit.new.coordinates <- function(distance.matrix, lat.lng, span = 0.3){
   
   dist.mtx <- distance.matrix[1:(ncol(distance.matrix)-3), -c(1,2,3)]
   dist.mtx <- dist.mtx + t(dist.mtx)
@@ -33,8 +33,8 @@ loess.fit.new.coordinates <- function(distance.matrix, lat.lng){
   transformed.coordinates <- coord.mtx[, 1:2]
   model.data <- cbind(transformed.coordinates, original.coordinates)
   
-  model.dim1 <- loess(data = model.data, formula = dim1 ~ lat + lng, degree = 2, span = 0.3)
-  model.dim2 <- loess(data = model.data, formula = dim2 ~ lat + lng, degree = 2, span = 0.3)
+  model.dim1 <- loess(data = model.data, formula = dim1 ~ lat + lng, degree = 2, span = span)
+  model.dim2 <- loess(data = model.data, formula = dim2 ~ lat + lng, degree = 2, span = span)
   
   fitted.dim1 <- predict(model.dim1, lat.lng, type = "response")
   fitted.dim2 <- predict(model.dim2, lat.lng, type = "response")
