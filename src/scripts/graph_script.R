@@ -1,6 +1,6 @@
 # script to create graphs
 
-span <- 0.3
+span <- 1
 
 boroughs.geom <- calc.boroughs.geom(nyb, span)
 voronoi.geom  <- calc.voronoi.segment.geom(distance.matrix)
