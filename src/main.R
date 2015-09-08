@@ -1,5 +1,10 @@
-#setwd("~/Dropbox (BPS)/Venmo_Analytics/Strategy Team/Tom V/map")
+setwd("~/Dropbox (BPS)/Venmo_Analytics/Strategy Team/Tom V/map")
 #setwd("~/Git/timespace")
+
+library('ProjectTemplate')
+load("images/.RData")
+
+load.project()
 
 prefixes <- c("functions/")
 
@@ -10,7 +15,4 @@ for (prefix in prefixes){
   }
 }
 
-library('ProjectTemplate')
-load("images/.RData")
 
-load.project()

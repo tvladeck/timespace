@@ -3,10 +3,22 @@ calc.boroughs.geom <- function(nyb){
   
   boroughs.geom <- geom_polygon(
     data = cvx.nyb, 
-    aes(x=dim1, y=dim2, fill=id, group=group)
+    aes(x=dim1, y=dim2, fill=group, group=group)
   )
   
   return(boroughs.geom)
+}
+
+calc.nta.geom <- function(nta){
+  nta.coords <- loess.fit.new.coordinates(distance.matrix, nta)
+  
+  nta.geom <- geom_polygon(
+    data = nta.coords,
+    aes(x=dim1, y=dim2, fill=group, group=group)
+  )
+  
+  return(nta.geom)
+  
 }
 
 calc.subways.geom <- function(subways){

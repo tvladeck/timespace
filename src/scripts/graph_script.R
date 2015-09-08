@@ -3,7 +3,8 @@
 boroughs.geom <- calc.boroughs.geom(nyb)
 voronoi.geom  <- calc.voronoi.segment.geom(distance.matrix)
 subways.geom  <- calc.subways.geom(subways)
+nta.geom <- calc.nta.geom(nta)
 
-geoms <- c(boroughs.geom, voronoi.geom, subways.geom)
+geoms <- c(nta.geom, voronoi.geom, subways.geom)
 
 plot <- overlay.geoms(geoms) + coord_flip() + scale_x_reverse() + scale_y_reverse()
