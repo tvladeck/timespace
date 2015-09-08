@@ -12,7 +12,7 @@ calc.boroughs.geom <- function(nyb, span = 0.3){
 }
 
 calc.nta.geom <- function(nta, span = 0.3){
-  nta.coords <- loess.fit.new.coordinates(distance.matrix, nta)
+  nta.coords <- loess.fit.new.coordinates(distance.matrix, nta, span)
   
   nta.geom <- geom_polygon(
     data = nta.coords,
