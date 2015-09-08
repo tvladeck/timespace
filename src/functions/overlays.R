@@ -1,4 +1,4 @@
-span <- 0.3
+span <- 1
 
 calc.boroughs.geom <- function(nyb, span = 0.3){
   cvx.nyb <- loess.fit.new.coordinates(distance.matrix, nyb, span)
@@ -16,7 +16,7 @@ calc.nta.geom <- function(nta, span = 0.3){
   
   nta.geom <- geom_polygon(
     data = nta.coords,
-    aes(x=dim1, y=dim2, fill=group, group=group)
+    aes(x=dim1, y=dim2, fill=id, group=group)
   )
   
   return(nta.geom)
