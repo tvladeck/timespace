@@ -1,12 +1,13 @@
 # script to create graphs
 
-span <- 1
+span <- 0.12
 
 boroughs.geom <- calc.boroughs.geom(nyb, span)
 voronoi.geom  <- calc.voronoi.segment.geom(distance.matrix)
 subways.geom  <- calc.subways.geom(subways, span)
+nta.geom <- calc.nta.geom(nta, span)
 
-geoms <- c(boroughs.geom, subways.geom)
+geoms <- c(nta.geom, subways.geom)
 
 new_theme_empty <- theme_bw()
 new_theme_empty$line <- element_blank()

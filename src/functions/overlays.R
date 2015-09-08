@@ -1,14 +1,26 @@
-span <- 0.3
+span <- 1
 
 calc.boroughs.geom <- function(nyb, span = 0.3){
   cvx.nyb <- loess.fit.new.coordinates(distance.matrix, nyb, span)
   
   boroughs.geom <- geom_polygon(
     data = cvx.nyb, 
-    aes(x=dim1, y=dim2, fill=id, group=group)
+    aes(x=dim1, y=dim2, fill=group, group=group)
   )
   
   return(boroughs.geom)
+}
+
+calc.nta.geom <- function(nta, span = 0.3){
+  nta.coords <- loess.fit.new.coordinates(distance.matrix, nta, span)
+  
+  nta.geom <- geom_polygon(
+    data = nta.coords,
+    aes(x=dim1, y=dim2, fill=id, group=group)
+  )
+  
+  return(nta.geom)
+  
 }
 
 calc.subways.geom <- function(subways, span = 0.3){

@@ -22,6 +22,14 @@ import.ny.waterfront.park.data <- function(){
  		return
 }
 
+import.nta.data <- function(){
+  readOGR("shapefiles/nynta_15c", "nynta") %>%
+    spTransform(CRS("+proj=longlat +datum=WGS84")) %>%
+    fortify %>%
+    rename(lng = long) %>% 
+    return
+}
+
 import.ny.subway.stations <- function(all.stops = F){
 
 	disambiguate.stations <- function(df){

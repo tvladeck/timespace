@@ -1,11 +1,11 @@
+
+#setwd("~/Git/timespace")
 #setwd("~/Dropbox (BPS)/Venmo_Analytics/Strategy Team/Tom V/map")
-setwd("~/Git/timespace")
 
 library('ProjectTemplate')
 load("images/.RData")
 
 load.project()
-
 
 prefixes <- c("functions/")
 
