@@ -1,5 +1,6 @@
-setwd("~/Dropbox (BPS)/Venmo_Analytics/Strategy Team/Tom V/map")
+
 #setwd("~/Git/timespace")
+#setwd("~/Dropbox (BPS)/Venmo_Analytics/Strategy Team/Tom V/map")
 
 library('ProjectTemplate')
 load("images/.RData")
@@ -14,5 +15,4 @@ for (prefix in prefixes){
     source(str_c("src/", prefix, src.file))  
   }
 }
-
 

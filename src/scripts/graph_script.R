@@ -1,10 +1,23 @@
 # script to create graphs
 
-boroughs.geom <- calc.boroughs.geom(nyb)
+span <- 1
+
+boroughs.geom <- calc.boroughs.geom(nyb, span)
 voronoi.geom  <- calc.voronoi.segment.geom(distance.matrix)
-subways.geom  <- calc.subways.geom(subways)
-nta.geom <- calc.nta.geom(nta)
+subways.geom  <- calc.subways.geom(subways, span)
+nta.geom <- calc.nta.geom(nta, span)
 
 geoms <- c(nta.geom, voronoi.geom, subways.geom)
 
-plot <- overlay.geoms(geoms) + coord_flip() + scale_x_reverse() + scale_y_reverse()
+new_theme_empty <- theme_bw()
+new_theme_empty$line <- element_blank()
+new_theme_empty$rect <- element_blank()
+new_theme_empty$strip.text <- element_blank()
+new_theme_empty$axis.text <- element_blank()
+new_theme_empty$plot.title <- element_blank()
+new_theme_empty$axis.title <- element_blank()
+new_theme_empty$legend.position <- "none"
+
+plot <- overlay.geoms(geoms) + 
+  coord_flip() + scale_x_reverse() + 
+  scale_y_reverse() + new_theme_empty
