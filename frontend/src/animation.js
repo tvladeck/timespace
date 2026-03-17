@@ -40,7 +40,9 @@ export function setupAnimation(map, data) {
 
     // Subway stations
     map.setPaintProperty("subway-dots-geo", "circle-opacity", geo * 0.8);
+    map.setPaintProperty("subway-dots-geo", "circle-stroke-opacity", geo * 0.8);
     map.setPaintProperty("subway-dots-dist", "circle-opacity", dist * 0.8);
+    map.setPaintProperty("subway-dots-dist", "circle-stroke-opacity", dist * 0.8);
 
     // Labels
     map.setPaintProperty("labels-geo", "text-color",

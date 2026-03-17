@@ -49,7 +49,8 @@ export function addAllLayers(map, data) {
       "circle-color": "#ffffff",
       "circle-stroke-color": ["get", "color"],
       "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 9, 0.5, 12, 1.5],
-      "circle-opacity": ["interpolate", ["linear"], ["zoom"], 9, 0.3, 11, 0.8],
+      "circle-opacity": 0.8,
+      "circle-stroke-opacity": 0.8,
     },
   });
 
@@ -107,6 +108,7 @@ export function addAllLayers(map, data) {
       "circle-stroke-color": ["get", "color"],
       "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 9, 0.5, 12, 1.5],
       "circle-opacity": 0,
+      "circle-stroke-opacity": 0,
     },
   });
 

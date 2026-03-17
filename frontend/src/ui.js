@@ -40,7 +40,7 @@ function setupHover(map) {
   const infoContent = document.getElementById("info-content");
   let hoveredName = null;
 
-  map.on("mousemove", "hex-fills-geo", (e) => {
+  function onHexMove(e) {
     if (e.features.length === 0) return;
     const feature = e.features[0];
     const name = feature.properties.nta;
@@ -49,7 +49,6 @@ function setupHover(map) {
     if (!name || name === hoveredName) return;
     hoveredName = name;
 
-    // Highlight all hexes in the same NTA
     map.setFilter("hex-highlight", ["==", "nta", name]);
     map.setPaintProperty("hex-highlight", "fill-opacity", 0.15);
     map.getCanvas().style.cursor = "pointer";
@@ -60,18 +59,23 @@ function setupHover(map) {
       <span class="borough-badge" style="background: ${color}">${borough}</span>
     `;
     infoPanel.classList.remove("hidden");
-  });
+  }
 
-  map.on("mouseleave", "hex-fills-geo", () => {
+  function onHexLeave() {
     hoveredName = null;
     map.setFilter("hex-highlight", ["==", "nta", ""]);
     map.setPaintProperty("hex-highlight", "fill-opacity", 0);
     map.getCanvas().style.cursor = "";
     infoPanel.classList.add("hidden");
-  });
+  }
 
-  // Subway station hover
-  map.on("mouseenter", "subway-dots", (e) => {
+  // Hex hover on both geo and distorted layers
+  map.on("mousemove", "hex-fills-geo", onHexMove);
+  map.on("mousemove", "hex-fills-dist", onHexMove);
+  map.on("mouseleave", "hex-fills-geo", onHexLeave);
+  map.on("mouseleave", "hex-fills-dist", onHexLeave);
+
+  function onStationEnter(e) {
     if (e.features.length === 0) return;
     const f = e.features[0];
     map.getCanvas().style.cursor = "pointer";
@@ -80,12 +84,18 @@ function setupHover(map) {
       <p>Routes: ${f.properties.routes || "N/A"}</p>
     `;
     infoPanel.classList.remove("hidden");
-  });
+  }
 
-  map.on("mouseleave", "subway-dots", () => {
+  function onStationLeave() {
     map.getCanvas().style.cursor = "";
     infoPanel.classList.add("hidden");
-  });
+  }
+
+  // Subway station hover on both geo and distorted layers
+  map.on("mouseenter", "subway-dots-geo", onStationEnter);
+  map.on("mouseenter", "subway-dots-dist", onStationEnter);
+  map.on("mouseleave", "subway-dots-geo", onStationLeave);
+  map.on("mouseleave", "subway-dots-dist", onStationLeave);
 }
 
 function setupAboutModal() {
