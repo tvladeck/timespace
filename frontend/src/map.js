@@ -34,8 +34,9 @@ export function createMap() {
   return map;
 }
 
-async function fetchJSON(url) {
-  const res = await fetch(url);
+async function fetchJSON(path) {
+  const base = import.meta.env.BASE_URL || "/";
+  const res = await fetch(base + path.replace(/^\//, ""));
   return res.json();
 }
 
