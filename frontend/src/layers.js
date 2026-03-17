@@ -1,33 +1,27 @@
 /**
- * Add all map layers with geographic data as initial state.
+ * Add all map layers — both geographic and distorted versions.
+ * Animation works by cross-fading opacity between the two sets.
  */
 export function addAllLayers(map, data) {
-  // Sources
-  map.addSource("hexgrid", {
-    type: "geojson",
-    data: data.hexgrid.geo,
-  });
+  // Sources — both geo and distorted loaded upfront
+  map.addSource("hexgrid-geo", { type: "geojson", data: data.hexgrid.geo });
+  map.addSource("hexgrid-dist", { type: "geojson", data: data.hexgrid.distorted });
 
-  map.addSource("subway-routes", {
-    type: "geojson",
-    data: data.subwayRoutes.geo,
-  });
+  map.addSource("subway-routes-geo", { type: "geojson", data: data.subwayRoutes.geo });
+  map.addSource("subway-routes-dist", { type: "geojson", data: data.subwayRoutes.distorted });
 
-  map.addSource("subway-stations", {
-    type: "geojson",
-    data: data.subwayStations.geo,
-  });
+  map.addSource("subway-stations-geo", { type: "geojson", data: data.subwayStations.geo });
+  map.addSource("subway-stations-dist", { type: "geojson", data: data.subwayStations.distorted });
 
-  map.addSource("labels", {
-    type: "geojson",
-    data: data.labels.geo,
-  });
+  map.addSource("labels-geo", { type: "geojson", data: data.labels.geo });
+  map.addSource("labels-dist", { type: "geojson", data: data.labels.distorted });
 
-  // Layer 1: Hex grid fills
+  // === Geographic layers (visible by default) ===
+
   map.addLayer({
-    id: "hex-fills",
+    id: "hex-fills-geo",
     type: "fill",
-    source: "hexgrid",
+    source: "hexgrid-geo",
     paint: {
       "fill-color": ["get", "color"],
       "fill-opacity": 0.4,
@@ -35,11 +29,10 @@ export function addAllLayers(map, data) {
     },
   });
 
-  // Layer 2: Subway routes
   map.addLayer({
-    id: "subway-lines",
+    id: "subway-lines-geo",
     type: "line",
-    source: "subway-routes",
+    source: "subway-routes-geo",
     paint: {
       "line-color": ["get", "color"],
       "line-width": 2,
@@ -47,65 +40,26 @@ export function addAllLayers(map, data) {
     },
   });
 
-  // Layer 3: Subway stations
   map.addLayer({
-    id: "subway-dots",
+    id: "subway-dots-geo",
     type: "circle",
-    source: "subway-stations",
+    source: "subway-stations-geo",
     paint: {
-      "circle-radius": [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        9, 1,
-        12, 3,
-        14, 5,
-      ],
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, 1, 12, 3, 14, 5],
       "circle-color": "#ffffff",
       "circle-stroke-color": ["get", "color"],
-      "circle-stroke-width": [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        9, 0.5,
-        12, 1.5,
-      ],
-      "circle-opacity": [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        9, 0.3,
-        11, 0.8,
-      ],
+      "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 9, 0.5, 12, 1.5],
+      "circle-opacity": ["interpolate", ["linear"], ["zoom"], 9, 0.3, 11, 0.8],
     },
   });
 
-  // Layer 4: Hex hover highlight
   map.addLayer({
-    id: "hex-highlight",
-    type: "fill",
-    source: "hexgrid",
-    paint: {
-      "fill-color": "#ffffff",
-      "fill-opacity": 0,
-    },
-    filter: ["==", "nta", ""],
-  });
-
-  // Layer 5: Labels
-  map.addLayer({
-    id: "labels-nta",
+    id: "labels-geo",
     type: "symbol",
-    source: "labels",
+    source: "labels-geo",
     layout: {
       "text-field": ["get", "name"],
-      "text-size": [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        10, 8,
-        13, 12,
-      ],
+      "text-size": ["interpolate", ["linear"], ["zoom"], 10, 8, 13, 12],
       "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
       "text-anchor": "center",
       "text-allow-overlap": false,
@@ -117,5 +71,71 @@ export function addAllLayers(map, data) {
       "text-halo-width": 1.5,
     },
     minzoom: 11,
+  });
+
+  // === Distorted layers (hidden by default) ===
+
+  map.addLayer({
+    id: "hex-fills-dist",
+    type: "fill",
+    source: "hexgrid-dist",
+    paint: {
+      "fill-color": ["get", "color"],
+      "fill-opacity": 0,
+      "fill-outline-color": "rgba(255, 255, 255, 0.0)",
+    },
+  });
+
+  map.addLayer({
+    id: "subway-lines-dist",
+    type: "line",
+    source: "subway-routes-dist",
+    paint: {
+      "line-color": ["get", "color"],
+      "line-width": 2,
+      "line-opacity": 0,
+    },
+  });
+
+  map.addLayer({
+    id: "subway-dots-dist",
+    type: "circle",
+    source: "subway-stations-dist",
+    paint: {
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, 1, 12, 3, 14, 5],
+      "circle-color": "#ffffff",
+      "circle-stroke-color": ["get", "color"],
+      "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 9, 0.5, 12, 1.5],
+      "circle-opacity": 0,
+    },
+  });
+
+  map.addLayer({
+    id: "labels-dist",
+    type: "symbol",
+    source: "labels-dist",
+    layout: {
+      "text-field": ["get", "name"],
+      "text-size": ["interpolate", ["linear"], ["zoom"], 10, 8, 13, 12],
+      "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
+      "text-anchor": "center",
+      "text-allow-overlap": false,
+      "text-optional": true,
+    },
+    paint: {
+      "text-color": "rgba(255, 255, 255, 0.0)",
+      "text-halo-color": "rgba(10, 22, 40, 0.8)",
+      "text-halo-width": 1.5,
+    },
+    minzoom: 11,
+  });
+
+  // Hover highlight (on both)
+  map.addLayer({
+    id: "hex-highlight",
+    type: "fill",
+    source: "hexgrid-geo",
+    paint: { "fill-color": "#ffffff", "fill-opacity": 0 },
+    filter: ["==", "nta", ""],
   });
 }

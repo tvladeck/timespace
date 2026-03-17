@@ -40,7 +40,7 @@ function setupHover(map) {
   const infoContent = document.getElementById("info-content");
   let hoveredName = null;
 
-  map.on("mousemove", "hex-fills", (e) => {
+  map.on("mousemove", "hex-fills-geo", (e) => {
     if (e.features.length === 0) return;
     const feature = e.features[0];
     const name = feature.properties.nta;
@@ -62,7 +62,7 @@ function setupHover(map) {
     infoPanel.classList.remove("hidden");
   });
 
-  map.on("mouseleave", "hex-fills", () => {
+  map.on("mouseleave", "hex-fills-geo", () => {
     hoveredName = null;
     map.setFilter("hex-highlight", ["==", "nta", ""]);
     map.setPaintProperty("hex-highlight", "fill-opacity", 0);

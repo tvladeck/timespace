@@ -1,9 +1,9 @@
 /**
- * Morph animation between geographic and timespace views.
+ * Cross-fade animation between geographic and timespace views.
  *
- * Performance optimization: pre-extracts all coordinates into flat
- * Float64Arrays at load time. Each frame just lerps between two arrays
- * and writes back — no JSON cloning or tree walking.
+ * Instead of morphing coordinates (which requires expensive setData calls),
+ * both geo and distorted layers are pre-loaded and we just animate opacity.
+ * This is GPU-accelerated via MapLibre's WebGL renderer — smooth 60fps.
  */
 
 const ANIMATION_DURATION = 1500;
@@ -12,113 +12,41 @@ function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-/**
- * Pre-extract all leaf coordinates from a GeoJSON into a flat array.
- * Returns { flat: Float64Array, offsets: [...] } where offsets track
- * how to write coordinates back into the GeoJSON structure.
- */
-function extractCoords(geojson) {
-  const coords = [];
-
-  function walk(node) {
-    if (Array.isArray(node)) {
-      if (node.length >= 2 && typeof node[0] === "number") {
-        coords.push(node[0], node[1]);
-      } else {
-        for (const child of node) walk(child);
-      }
-    }
-  }
-
-  for (const feature of geojson.features) {
-    walk(feature.geometry.coordinates);
-  }
-
-  return new Float64Array(coords);
-}
-
-/**
- * Write interpolated coordinates back into the GeoJSON structure.
- */
-function writeCoords(geojson, flat) {
-  let idx = 0;
-
-  function walk(node) {
-    if (Array.isArray(node)) {
-      if (node.length >= 2 && typeof node[0] === "number") {
-        node[0] = flat[idx++];
-        node[1] = flat[idx++];
-      } else {
-        for (const child of node) walk(child);
-      }
-    }
-  }
-
-  for (const feature of geojson.features) {
-    walk(feature.geometry.coordinates);
-  }
-}
-
 export function setupAnimation(map, data) {
-  let currentT = 0;
+  let currentT = 0; // 0 = geographic, 1 = distorted
   let targetT = 0;
-  let animating = false;
   let animationStart = null;
   let startT = 0;
 
-  // Pre-extract coordinate arrays for each source
-  const sources = [];
-  for (const [name, layerData] of Object.entries(data)) {
-    const geoFlat = extractCoords(layerData.geo);
-    const distFlat = extractCoords(layerData.distorted);
+  const MAX_HEX_OPACITY = 0.4;
+  const MAX_LINE_OPACITY = 0.8;
+  const MAX_LABEL_OPACITY = 0.7;
 
-    // Verify same length
-    if (geoFlat.length !== distFlat.length) {
-      console.warn(`${name}: coordinate count mismatch (${geoFlat.length} vs ${distFlat.length}), skipping animation`);
-      continue;
-    }
+  function setOpacities(t) {
+    const geo = 1 - t;
+    const dist = t;
 
-    // Pre-allocate interpolation buffer and a mutable copy of the geo GeoJSON
-    const interpFlat = new Float64Array(geoFlat.length);
-    // Deep clone once for the mutable working copy
-    const mutableGeoJSON = JSON.parse(JSON.stringify(layerData.geo));
+    // Hex fills
+    map.setPaintProperty("hex-fills-geo", "fill-opacity", geo * MAX_HEX_OPACITY);
+    map.setPaintProperty("hex-fills-geo", "fill-outline-color",
+      `rgba(255, 255, 255, ${geo * 0.15})`);
+    map.setPaintProperty("hex-fills-dist", "fill-opacity", dist * MAX_HEX_OPACITY);
+    map.setPaintProperty("hex-fills-dist", "fill-outline-color",
+      `rgba(255, 255, 255, ${dist * 0.15})`);
 
-    sources.push({
-      name,
-      geoFlat,
-      distFlat,
-      interpFlat,
-      mutableGeoJSON,
-    });
-  }
+    // Subway lines
+    map.setPaintProperty("subway-lines-geo", "line-opacity", geo * MAX_LINE_OPACITY);
+    map.setPaintProperty("subway-lines-dist", "line-opacity", dist * MAX_LINE_OPACITY);
 
-  function updateSources(t) {
-    for (const src of sources) {
-      const { geoFlat, distFlat, interpFlat, mutableGeoJSON, name } = src;
-      const n = geoFlat.length;
+    // Subway stations
+    map.setPaintProperty("subway-dots-geo", "circle-opacity", geo * 0.8);
+    map.setPaintProperty("subway-dots-dist", "circle-opacity", dist * 0.8);
 
-      // Fast lerp on flat arrays
-      if (t <= 0) {
-        interpFlat.set(geoFlat);
-      } else if (t >= 1) {
-        interpFlat.set(distFlat);
-      } else {
-        for (let i = 0; i < n; i++) {
-          interpFlat[i] = geoFlat[i] + (distFlat[i] - geoFlat[i]) * t;
-        }
-      }
-
-      // Write back into mutable GeoJSON
-      writeCoords(mutableGeoJSON, interpFlat);
-
-      // Update MapLibre source
-      const source = map.getSource(name === "subwayRoutes" ? "subway-routes" :
-                                    name === "subwayStations" ? "subway-stations" :
-                                    name);
-      if (source) {
-        source.setData(mutableGeoJSON);
-      }
-    }
+    // Labels
+    map.setPaintProperty("labels-geo", "text-color",
+      `rgba(255, 255, 255, ${geo * MAX_LABEL_OPACITY})`);
+    map.setPaintProperty("labels-dist", "text-color",
+      `rgba(255, 255, 255, ${dist * MAX_LABEL_OPACITY})`);
   }
 
   function animate(timestamp) {
@@ -128,13 +56,12 @@ export function setupAnimation(map, data) {
     const easedProgress = easeInOutCubic(progress);
 
     currentT = startT + (targetT - startT) * easedProgress;
-    updateSources(currentT);
+    setOpacities(currentT);
 
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
       currentT = targetT;
-      animating = false;
       animationStart = null;
     }
   }
@@ -143,7 +70,6 @@ export function setupAnimation(map, data) {
     toggle() {
       targetT = currentT < 0.5 ? 1 : 0;
       startT = currentT;
-      animating = true;
       animationStart = null;
       requestAnimationFrame(animate);
       return targetT === 1;
