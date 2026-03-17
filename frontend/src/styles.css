@@ -1,0 +1,222 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+  background: #0a1628;
+}
+
+#map {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Toggle button */
+#toggle-container {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+#toggle-btn {
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 24px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+#toggle-btn:hover {
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transform: scale(1.02);
+}
+
+#toggle-btn.active {
+  background: #1a1a2e;
+  color: #fff;
+}
+
+/* Info panel */
+#info-panel {
+  position: absolute;
+  bottom: 24px;
+  left: 16px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 16px 20px;
+  max-width: 320px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#info-panel.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+}
+
+#info-content h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+  color: #1a1a2e;
+}
+
+#info-content p {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.4;
+}
+
+#info-content .borough-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 4px;
+}
+
+/* About button */
+#about-btn-container {
+  position: absolute;
+  bottom: 24px;
+  right: 16px;
+  z-index: 10;
+}
+
+#about-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+#about-btn:hover {
+  background: #fff;
+  transform: scale(1.1);
+}
+
+/* About modal */
+#about-modal.hidden {
+  display: none;
+}
+
+#about-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+}
+
+#about-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 101;
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 520px;
+  width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+}
+
+#about-content h2 {
+  font-size: 24px;
+  margin-bottom: 12px;
+  color: #1a1a2e;
+}
+
+#about-content h3 {
+  font-size: 16px;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  color: #1a1a2e;
+}
+
+#about-content p,
+#about-content li {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.6;
+}
+
+#about-content ol,
+#about-content ul {
+  padding-left: 20px;
+  margin-bottom: 8px;
+}
+
+#about-content li {
+  margin-bottom: 4px;
+}
+
+#about-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #888;
+  line-height: 1;
+}
+
+#about-close:hover {
+  color: #333;
+}
+
+.credits {
+  margin-top: 16px;
+  font-size: 13px !important;
+  color: #888 !important;
+}
+
+.credits a {
+  color: #5b9b8a;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  #toggle-btn {
+    padding: 8px 18px;
+    font-size: 13px;
+  }
+
+  #info-panel {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    max-width: none;
+  }
+
+  #about-content {
+    padding: 24px;
+  }
+}

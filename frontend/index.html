@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timespace NYC</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <div id="toggle-container">
+      <button id="toggle-btn" aria-label="Switch view">
+        <span id="toggle-label">Show Timespace</span>
+      </button>
+    </div>
+
+    <div id="info-panel" class="hidden">
+      <div id="info-content"></div>
+    </div>
+
+    <div id="about-btn-container">
+      <button id="about-btn" aria-label="About">?</button>
+    </div>
+
+    <div id="about-modal" class="hidden">
+      <div id="about-backdrop"></div>
+      <div id="about-content">
+        <button id="about-close">&times;</button>
+        <h2>Timespace NYC</h2>
+        <p>
+          This map distorts New York City so that <strong>distances represent
+          transit times</strong> instead of geographic distance.
+        </p>
+        <p>
+          Neighborhoods well-connected by subway appear closer together,
+          while poorly-served areas drift further apart.
+        </p>
+        <h3>How it works</h3>
+        <ol>
+          <li>Collect transit times between 139 NYC neighborhoods</li>
+          <li>Embed the transit-time matrix into 2D using multidimensional scaling (MDS)</li>
+          <li>Build a Delaunay triangulation in geographic space</li>
+          <li>Compute piecewise affine transforms from geographic to timespace coordinates</li>
+          <li>Apply the distortion to all map features</li>
+        </ol>
+        <h3>What to look for</h3>
+        <ul>
+          <li>Manhattan compresses — most of it is within 20 minutes by subway</li>
+          <li>Express subway corridors pull distant neighborhoods closer</li>
+          <li>Areas without subway access (eastern Queens, southern Brooklyn, Staten Island) expand dramatically</li>
+        </ul>
+        <p class="credits">
+          Built by Thomas Vladeck.
+          <a href="https://github.com/tvladeck/timespace" target="_blank">Source on GitHub</a>.
+        </p>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
