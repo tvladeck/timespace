@@ -1,66 +1,123 @@
 /**
  * Morph animation between geographic and timespace views.
  *
- * Interpolates all coordinates: lerp(geo[i], distorted[i], t) with
- * ease-in-out over ~1.5 seconds.
+ * Performance optimization: pre-extracts all coordinates into flat
+ * Float64Arrays at load time. Each frame just lerps between two arrays
+ * and writes back — no JSON cloning or tree walking.
  */
 
-const ANIMATION_DURATION = 1500; // ms
+const ANIMATION_DURATION = 1500;
 
 function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 /**
- * Deep-interpolate GeoJSON coordinates.
- * geo and distorted must have identical structure.
+ * Pre-extract all leaf coordinates from a GeoJSON into a flat array.
+ * Returns { flat: Float64Array, offsets: [...] } where offsets track
+ * how to write coordinates back into the GeoJSON structure.
  */
-function lerpCoords(geo, distorted, t) {
-  if (typeof geo === "number") {
-    return geo + (distorted - geo) * t;
+function extractCoords(geojson) {
+  const coords = [];
+
+  function walk(node) {
+    if (Array.isArray(node)) {
+      if (node.length >= 2 && typeof node[0] === "number") {
+        coords.push(node[0], node[1]);
+      } else {
+        for (const child of node) walk(child);
+      }
+    }
   }
-  return geo.map((g, i) => lerpCoords(g, distorted[i], t));
+
+  for (const feature of geojson.features) {
+    walk(feature.geometry.coordinates);
+  }
+
+  return new Float64Array(coords);
 }
 
-function interpolateGeoJSON(geoData, distortedData, t) {
-  if (t <= 0) return geoData;
-  if (t >= 1) return distortedData;
+/**
+ * Write interpolated coordinates back into the GeoJSON structure.
+ */
+function writeCoords(geojson, flat) {
+  let idx = 0;
 
-  const result = JSON.parse(JSON.stringify(geoData));
-  for (let i = 0; i < result.features.length; i++) {
-    const geoCoords = geoData.features[i].geometry.coordinates;
-    const distCoords = distortedData.features[i].geometry.coordinates;
-    result.features[i].geometry.coordinates = lerpCoords(
-      geoCoords,
-      distCoords,
-      t
-    );
+  function walk(node) {
+    if (Array.isArray(node)) {
+      if (node.length >= 2 && typeof node[0] === "number") {
+        node[0] = flat[idx++];
+        node[1] = flat[idx++];
+      } else {
+        for (const child of node) walk(child);
+      }
+    }
   }
-  return result;
+
+  for (const feature of geojson.features) {
+    walk(feature.geometry.coordinates);
+  }
 }
 
 export function setupAnimation(map, data) {
-  let currentT = 0; // 0 = geographic, 1 = distorted
+  let currentT = 0;
   let targetT = 0;
   let animating = false;
   let animationStart = null;
   let startT = 0;
 
-  const sources = [
-    { name: "hexgrid", data: data.hexgrid },
-    { name: "subway-routes", data: data.subwayRoutes },
-    { name: "subway-stations", data: data.subwayStations },
-    { name: "labels", data: data.labels },
-  ];
+  // Pre-extract coordinate arrays for each source
+  const sources = [];
+  for (const [name, layerData] of Object.entries(data)) {
+    const geoFlat = extractCoords(layerData.geo);
+    const distFlat = extractCoords(layerData.distorted);
+
+    // Verify same length
+    if (geoFlat.length !== distFlat.length) {
+      console.warn(`${name}: coordinate count mismatch (${geoFlat.length} vs ${distFlat.length}), skipping animation`);
+      continue;
+    }
+
+    // Pre-allocate interpolation buffer and a mutable copy of the geo GeoJSON
+    const interpFlat = new Float64Array(geoFlat.length);
+    // Deep clone once for the mutable working copy
+    const mutableGeoJSON = JSON.parse(JSON.stringify(layerData.geo));
+
+    sources.push({
+      name,
+      geoFlat,
+      distFlat,
+      interpFlat,
+      mutableGeoJSON,
+    });
+  }
 
   function updateSources(t) {
-    for (const source of sources) {
-      const interpolated = interpolateGeoJSON(
-        source.data.geo,
-        source.data.distorted,
-        t
-      );
-      map.getSource(source.name).setData(interpolated);
+    for (const src of sources) {
+      const { geoFlat, distFlat, interpFlat, mutableGeoJSON, name } = src;
+      const n = geoFlat.length;
+
+      // Fast lerp on flat arrays
+      if (t <= 0) {
+        interpFlat.set(geoFlat);
+      } else if (t >= 1) {
+        interpFlat.set(distFlat);
+      } else {
+        for (let i = 0; i < n; i++) {
+          interpFlat[i] = geoFlat[i] + (distFlat[i] - geoFlat[i]) * t;
+        }
+      }
+
+      // Write back into mutable GeoJSON
+      writeCoords(mutableGeoJSON, interpFlat);
+
+      // Update MapLibre source
+      const source = map.getSource(name === "subwayRoutes" ? "subway-routes" :
+                                    name === "subwayStations" ? "subway-stations" :
+                                    name);
+      if (source) {
+        source.setData(mutableGeoJSON);
+      }
     }
   }
 
@@ -89,7 +146,7 @@ export function setupAnimation(map, data) {
       animating = true;
       animationStart = null;
       requestAnimationFrame(animate);
-      return targetT === 1; // returns true if transitioning to timespace
+      return targetT === 1;
     },
     isTimespace() {
       return currentT > 0.5;
